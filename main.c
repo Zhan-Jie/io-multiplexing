@@ -8,6 +8,9 @@
 
 int main() {
     int lfd = socket(AF_INET, SOCK_STREAM, 0);
+    // 设置socket选项 SO_REUSEADDR 不为0，以避免server重启遇到“地址已被占用”的错误
+    int optval = 1;
+    setsockopt(lfd, SOL_SOCKET, SO_REUSEADDR, &optval, sizeof(optval));
 
     struct sockaddr_in addr;
     memset(&addr, 0, sizeof(addr));
@@ -17,10 +20,6 @@ int main() {
     // htonl 将32位无符号整数转为网络字节序（大端序）
     // INADDR_ANY 表示任意IP地址 0.0.0.0
     addr.sin_addr.s_addr = htonl(INADDR_ANY);
-
-    // 设置socket选项 SO_REUSEADDR 不为0，以避免server重启遇到“地址已被占用”的错误
-    int optval = 1;
-    setsockopt(lfd, SOL_SOCKET, SO_REUSEADDR, &optval, sizeof(optval));
 
     bind(lfd, (struct sockaddr*)&addr, sizeof(addr));
     
