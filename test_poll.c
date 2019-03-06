@@ -61,6 +61,10 @@ int main() {
     while(1) {
         // 仅仅订阅socket读事件，并且一直阻塞
         int ready = poll(peers, last_index+1, -1);
+        if (ready < 0) {
+            printf("error occured. error code: %d\n", ready);
+            break;
+        }
         // 判断server socket是否有新的连接
         if (peers[0].revents & POLLIN) {
             --ready;

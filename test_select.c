@@ -57,6 +57,10 @@ int main() {
         result_set = watch_set;
         // 仅仅订阅socket读事件，并且一直阻塞
         int ready = select(max_fd+1, &result_set, NULL, NULL, NULL);
+        if (ready < 0) {
+            printf("error occured. error code: %d\n", ready);
+            break;
+        }
         // 检查server socket是否有新的连接（可读）
         if (FD_ISSET(lfd, &result_set)) {
             int client_fd = accept(lfd, (struct sockaddr*)&client_addr, &len);

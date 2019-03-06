@@ -12,5 +12,12 @@ build_poll: test_poll.c
 test_poll: build_poll
 	@bin/test_poll
 
+build_epoll: test_epoll.c
+	@if [ ! -d bin ]; then mkdir bin; fi;
+	@gcc -o bin/test_epoll -std=c99 test_epoll.c
+
+test_epoll: build_epoll
+	@bin/test_epoll
+
 clean:
 	@rm -rf bin/
