@@ -1,29 +1,47 @@
 #include <sys/socket.h>
 #include <sys/select.h>
 #include <netinet/in.h>
+#include <arpa/inet.h>
 #include <unistd.h>
 
 #include <string.h>
 #include <stdio.h>
 
-int main() {
+int create_socket() {
     int lfd = socket(AF_INET, SOCK_STREAM, 0);
     // 设置socket选项 SO_REUSEADDR 不为0，以避免server重启遇到“地址已被占用”的错误
     int optval = 1;
     setsockopt(lfd, SOL_SOCKET, SO_REUSEADDR, &optval, sizeof(optval));
+    return lfd;
+}
 
+int bind_socket(int lfd, const char* host, short port) {
     struct sockaddr_in addr;
     memset(&addr, 0, sizeof(addr));
     // htons 将16位无符号整数转为网络字节序（大端序）
-    addr.sin_port = htons(8888);
+    addr.sin_port = htons(port);
     addr.sin_family = AF_INET;
-    // htonl 将32位无符号整数转为网络字节序（大端序）
-    // INADDR_ANY 表示任意IP地址 0.0.0.0
-    addr.sin_addr.s_addr = htonl(INADDR_ANY);
-
-    bind(lfd, (struct sockaddr*)&addr, sizeof(addr));
+    // inet_addr 将字符串点分IP地址转换为整数类型的IP地址
+    addr.sin_addr.s_addr = inet_addr(host);
     
-    printf("listen to 0.0.0.0:8888 ...\n");
+    return bind(lfd, (struct sockaddr*)&addr, sizeof(addr));
+}
+
+int main() {
+    const char* host = "127.0.0.1";
+    int port = 8877;
+
+    // 创建server socket
+    int lfd = create_socket();
+
+    // 绑定socket到IP地址+端口
+    int rc;
+    if ((rc = bind_socket(lfd, host, port)) != 0) {
+        printf("failed to bind to address %s:%d. error code: %d\n", host, port, rc);
+        return 1;
+    }
+    
+    printf("listen to %s:%d ...\n", host, port);
     // 第2个参数 backlog 表示允许有多少个客户端socket连接请求进行排队
     listen(lfd, 128);
 
