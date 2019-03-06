@@ -80,6 +80,7 @@ int main() {
         char buf[256];
         for (int i = lfd + 1; i < max_fd+1; ++i) {
             if (FD_ISSET(i, &result_set)) {
+                --ready;
                 int n = read(i, buf, sizeof(buf));
                 if (n < 0) {
                     close(i);
@@ -95,11 +96,10 @@ int main() {
                     }
                     printf("%s", buf);
                 }
-                --ready;
-                if (ready <= 0) {
-                    // no more ready socket
-                    break;
-                }
+            }
+            if (ready <= 0) {
+                // no more ready socket
+                break;
             }
         }
     }
