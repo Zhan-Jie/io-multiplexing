@@ -102,7 +102,7 @@ epoll是Linux内核特有的API，可以高效实现一次性监控多个socket�
 
 使用`epoll_ctl()`系统调用可以在epoll数据结构中添加、删除或者修改文件描述符及对应事件。
 
-使用`epoll_wait()`系统调用会阻塞等待，直到有
+使用`epoll_wait()`系统调用会阻塞等待，直到有socket准备好或收到信号才会返回。
 
 ### epoll_create() ###
 
