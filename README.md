@@ -91,3 +91,87 @@ IO事件的可选值（宏）如下：
 - **POLLHUP**：表示对端socket关闭，只在`revents`字段中有意义；
 - **POLLNVAL**：无效的请求，文件描述符所代表的socket未打开；
 
+## 4. epoll ##
+
+epoll是Linux内核特有的API，可以高效实现一次性监控多个socket的活动。
+
+使用epoll时，需要使用`epoll_create()`创建在内核中对应
+的数据结构，使用一个文件描述符来引用它。epoll数据结构保存以下信息：
+- 需要监控的文件描述符列表以及对应事件类型；
+- 已准备好的socket文件描述符列表以及对应事件类型。
+
+使用`epoll_ctl()`系统调用可以在epoll数据结构中添加、删除或者修改文件描述符及对应事件。
+
+使用`epoll_wait()`系统调用会阻塞等待，直到有
+
+### epoll_create() ###
+
+`epoll_create`函数的原型如下：
+```c
+#include <sys/epoll.h>
+
+int epoll_create(int size);
+```
+参数说明：
+- **size**: Linux 2.6.8之后，这个参数会被忽略。这个参数原本是指示内核epoll数据结构的初始列表容量。
+
+返回值：epoll数据结构对应的文件描述符；值为-1时表示错误。
+
+### epoll_ctl() ###
+
+`epoll_ctl`函数的原型如下：
+```c
+#include <sys/epoll.h>
+
+int epoll_ctl(int epfd, 
+                int op, 
+                int fd, 
+                struct epoll_event *ev);
+```
+参数说明：
+- **epfd**：epoll数据结构的文件描述符；
+- **op**：可选值为EPOLL_CTL_ADD，EPOLL_CTL_DEL，EPOLL_CTL_MOD；
+- **fd**：需要添加、删除或修改的文件描述符；
+- **ev**：需要添加或修改的事件，在删除时此参数会被忽略，可以传NULL；
+
+返回值：0表示成功；-1表示失败。
+
+epoll事件类型的定义：
+```c
+struct epoll_event {
+    uint32_t events; /* epoll events (bit mask) */
+    epoll_data_t data; /* User data */
+};
+typedef union epoll_data {
+    void *ptr; /* Pointer to user-defined data */
+    int fd; /* File descriptor */
+    uint32_t u32; /* 32-bit integer */
+    uint64_t u64; /* 64-bit integer */
+} epoll_data_t;
+```
+其中`events`字段可选值宏定义如下：
+- **EPOLLIN**：数据可读；
+- **EPOLLRDHUP**：对端的socket关闭；
+- **EPOLLOUT**：数据可写；
+- **EPOLLET**：使用边缘触发事件机制；
+- **EPOLLONESHOT**：表示事件是一次性的，下次不再监视；
+- **EPOLLERR**：表示发生错误；
+- **EPOLLHUP**：表示socket已挂断（暂时不知道和EPOLLRDHUP有什么区别）
+
+### epoll_wait() ###
+
+`epoll_wait`函数的原型如下：
+```c
+#include <sys/epoll.h>
+
+int epoll_wait(int epfd, 
+               struct epoll_event *evlist, 
+               int maxevents, 
+               int timeout);
+```
+参数说明：
+- **epfd**：epoll数据结构的文件描述符；
+- **evlist**：用于接收事件列表结果的参数，在函数退出时它会被填充准备好的事件及对应socket文件描述符；
+- **maxevents**：表示evlist列表的最大容量；
+- **timeout**：超时时间，单位毫秒；传入-1表示没有准备好的socket就一直阻塞。
+
