@@ -175,3 +175,14 @@ int epoll_wait(int epfd,
 - **maxevents**：表示evlist列表的最大容量；
 - **timeout**：超时时间，单位毫秒；传入-1表示没有准备好的socket就一直阻塞。
 
+### 水平触发和边缘触发 ###
+
+水平触发（level-triggered）和边缘触发（edge-triggered）是IO多路复用中的两种IO事件通知模式。
+
+水平触发：调用`epoll_wait()`时，如果有socket已准备好就立即返回。这意味着，第一次调用epoll_wait时如果
+有一个socket有数据还未读完，接着再次调用epoll_wait它会立即返回，因为还有socket可读。
+
+边缘触发：调用`epoll_wait()`后，只有某个socket发生新的IO事件，才会使这个函数调用返回。否则，即使socket
+是准备好的，这个函数调用也不会返回，因为没有新的IO事件。
+
+`poll`、`select`和`epoll`默认都是水平触发通知模式。但是epoll也可以设置成边缘触发模式。
