@@ -10,7 +10,7 @@ Linux系统中和Socket网络通信有关的关键系统调用：
 > socket()系统调用创建的socket默认是主动模式，可以调用`connect()`与网络上的被动socket主动建立连接；也可以调用`bind()`绑定到一个地址，调用`listen()`进入被动模式，接收其它socket的连接请求。
 
 网络socket通信过程：
-![socket_communication](https://raw.githubusercontent.com/Zhan-Jie/Zhan-Jie.github.io/master/images/socket_communication.png)
+![socket_communication](https://raw.githubusercontent.com/Zhan-Jie/images/master/socket_communication.png)
 
 ## 2. select系统调用 ##
 
